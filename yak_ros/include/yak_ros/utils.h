@@ -96,9 +96,17 @@ bool updateParams(kfusion::KinFuParams& params, yak_ros_msgs::UpdateKinFuParamsR
     {
       params.icp_dist_thres = request.kinfu_params.icp_dist_thres;
     }
+    else if (param == request.ICP_FINAL_DIST_THRES)
+    {
+      params.icp_final_dist_thres = request.kinfu_params.icp_final_dist_thres;
+    }
     else if (param == request.ICP_ANGLE_THRES)
     {
       params.icp_angle_thres = request.kinfu_params.icp_angle_thres;
+    }
+    else if (param == request.ICP_FINAL_ANGLE_THRES)
+    {
+      params.icp_final_angle_thres = request.kinfu_params.icp_final_angle_thres;
     }
     else if (param == request.ICP_ITER_NUM)
     {

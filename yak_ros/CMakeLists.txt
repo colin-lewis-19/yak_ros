@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
      roscpp
      eigen_conversions
      pcl_ros
+     std_msgs
      tf2
      tf2_ros
      tf2_eigen

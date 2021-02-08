@@ -21,6 +21,8 @@ int32 LIGHT_POSE=19
 int32 USE_POSE_HINTS=20
 int32 USE_ICP=21
 int32 UPDATE_VIA_SENSOR_MOTION=22
+int32 ICP_FINAL_DIST_THRES = 23
+int32 ICP_FINAL_ANGLE_THRES = 24
 int32 ALL=100
 
 # This specifies which of the parameters given below should be updated. The rest will stay the same
