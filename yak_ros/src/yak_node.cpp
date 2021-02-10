@@ -8,7 +8,9 @@
 #include <pcl/io/ply_io.h>
 #include <pcl/common/transforms.h>
 
+#include <geometry_msgs/Pose.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <std_msgs/Float64.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <cv_bridge/cv_bridge.h>
@@ -62,6 +64,10 @@ OnlineFusionServer::OnlineFusionServer(ros::NodeHandle& nh,
                              pos[2]);
 
   fusion_.resetWithNewParams(params);
+
+  icp_movement_publisher_ = nh.advertise<geometry_msgs::Pose>("icp_movement", 0);
+  icp_movement_translation_publisher_ = nh.advertise<std_msgs::Float64>("icp_movement_translation", 0);
+  icp_movement_orientation_publisher_ = nh.advertise<std_msgs::Float64>("icp_movement_orientation", 0);
 }
 
 void OnlineFusionServer::onReceivedPointCloud(const sensor_msgs::PointCloud2ConstPtr& cloud_in)
@@ -160,8 +166,19 @@ void OnlineFusionServer::onReceivedDepthImg(const sensor_msgs::ImageConstPtr& im
       cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(next_image, next_image->encoding);
 
       // Integrate the depth image into the TSDF volume
-      if (!fusion_.fuse(cv_ptr->image, tsdf_frame_to_camera.cast<float>()))
+      Eigen::Affine3f icp_movement;
+      if (!fusion_.fuse(cv_ptr->image, tsdf_frame_to_camera.cast<float>(), icp_movement))
         ROS_ERROR("Failed to fuse image.");
+
+      geometry_msgs::Pose movement_msg = tf2::toMsg(icp_movement.cast<double>());
+      std_msgs::Float64 translation_msg, orientation_msg;
+      Eigen::Quaternionf q;
+      translation_msg.data = icp_movement.translation().norm();
+      orientation_msg.data = Eigen::Quaternionf(icp_movement.rotation()).angularDistance(q.setIdentity());
+
+      icp_movement_publisher_.publish(movement_msg);
+      icp_movement_translation_publisher_.publish(translation_msg);
+      icp_movement_orientation_publisher_.publish(orientation_msg);
 
       // If integration was successful, update the previous camera pose with the new camera pose
       tsdf_frame_to_camera_prev_ = tsdf_frame_to_camera;
@@ -366,7 +383,8 @@ int main(int argc, char** argv)
   kinfu_params.light_pose = cv::Vec3f(light_pose_x, light_pose_y, light_pose_z);
 
   kinfu_params.use_pose_hints = true;  // use robot forward kinematics to find camera pose relative to TSDF volume
-  kinfu_params.use_icp = false;        // since we're using robot FK to get the camera pose, don't use ICP (TODO: yet!)
+  //  kinfu_params.use_icp = false;        // since we're using robot FK to get the camera pose, don't use ICP (TODO: yet!)
+  pnh.param<bool>("use_icp", kinfu_params.use_icp, true);
   pnh.param<bool>("update_via_sensor_motion", kinfu_params.update_via_sensor_motion, false);
 
   // Set up the fusion server with the above parameters;

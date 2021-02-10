@@ -25,8 +25,12 @@ int32 bilateral_kernel_size
 float32 icp_truncate_depth_dist
 # Meters
 float32 icp_dist_thres
+# Meters
+float32 icp_final_dist_thres
 # Radians
 float32 icp_angle_thres
+# Radians
+float32 icp_final_angle_thres
 # Iterations for level index 0,1,..,3
 int32[] icp_iter_num
 
