@@ -18,9 +18,9 @@ find_package(cv_bridge REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
-     roscpp
      eigen_conversions
      pcl_ros
+     roscpp
      std_msgs
      tf2
      tf2_ros

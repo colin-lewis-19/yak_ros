@@ -65,7 +65,6 @@ OnlineFusionServer::OnlineFusionServer(ros::NodeHandle& nh,
 
   fusion_.resetWithNewParams(params);
 
-  icp_movement_publisher_ = nh.advertise<geometry_msgs::Pose>("icp_movement", 0);
   icp_movement_translation_publisher_ = nh.advertise<std_msgs::Float64>("icp_movement_translation", 0);
   icp_movement_orientation_publisher_ = nh.advertise<std_msgs::Float64>("icp_movement_orientation", 0);
 }
@@ -170,13 +169,12 @@ void OnlineFusionServer::onReceivedDepthImg(const sensor_msgs::ImageConstPtr& im
       if (!fusion_.fuse(cv_ptr->image, tsdf_frame_to_camera.cast<float>(), icp_movement))
         ROS_ERROR("Failed to fuse image.");
 
-      geometry_msgs::Pose movement_msg = tf2::toMsg(icp_movement.cast<double>());
       std_msgs::Float64 translation_msg, orientation_msg;
       Eigen::Quaternionf q;
       translation_msg.data = icp_movement.translation().norm();
       orientation_msg.data = Eigen::Quaternionf(icp_movement.rotation()).angularDistance(q.setIdentity());
 
-      icp_movement_publisher_.publish(movement_msg);
+      // TODO: Only publish if using ICP
       icp_movement_translation_publisher_.publish(translation_msg);
       icp_movement_orientation_publisher_.publish(orientation_msg);
 

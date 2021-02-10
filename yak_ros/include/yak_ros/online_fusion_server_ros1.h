@@ -137,7 +137,6 @@ private:
   /** @brief Used to visualize results in rviz */
   VisualizerRos1 visualizer_;
 
-  ros::Publisher icp_movement_publisher_;
   ros::Publisher icp_movement_translation_publisher_;
   ros::Publisher icp_movement_orientation_publisher_;
 };
